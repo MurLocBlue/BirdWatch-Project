@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: bird-watch-db
+    environment:
+      POSTGRES_DB: bird-watch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migration/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
+      - ./db/seed/001_seed_data.sql:/docker-entrypoint-initdb.d/002_seed_data.sql
+
+volumes:
+  postgres_data:
