@@ -14,6 +14,27 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./db/migration/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
       - ./db/seed/001_seed_data.sql:/docker-entrypoint-initdb.d/002_seed_data.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: bird-watch-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/bird-watch
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
