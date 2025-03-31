@@ -1,0 +1,32 @@
+<plugin>
+
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="birdwatch_plugin.BirdWatch">
+         </run>
+      </application>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="birdwatch_plugin.views.BirdWatchView"
+            id="birdwatch_plugin.views.BirdWatchView"
+            name="Bird Watch"
+            restorable="true">
+      </view>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="birdwatch_plugin.BirdWatchPerspective"
+            id="birdwatch_plugin.perspective"
+            name="Bird Watch">
+      </perspective>
+   </extension>
+
+</plugin>
