@@ -16,12 +16,23 @@ import birdwatch_plugin_datastore.model.Bird;
 import birdwatch_plugin_datastore.model.Sighting;
 import birdwatch_plugin_datastore.model.SightingRequest;
 
+/**
+ * Client class for interacting with the BirdWatch REST API.
+ * Provides asynchronous methods for all API operations.
+ *
+ * @author Costin Marinescu
+ * @version 0.1
+ */
 public class ApiClient {
     private static final String BASE_URL = "http://localhost:8080/api";
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final ExecutorService executor;
 
+    /**
+     * Constructs a new ApiClient with default configuration.
+     * Initializes HTTP client, JSON mapper, and executor service.
+     */
     public ApiClient() {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
@@ -29,6 +40,11 @@ public class ApiClient {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * Retrieves all birds from the API.
+     *
+     * @return CompletableFuture containing a list of all birds
+     */
     public CompletableFuture<List<Bird>> getBirds() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/birds"))
@@ -45,6 +61,12 @@ public class ApiClient {
                 });
     }
 
+    /**
+     * Creates a new bird in the system.
+     *
+     * @param bird The bird to create
+     * @return CompletableFuture containing the created bird
+     */
     public CompletableFuture<Bird> createBird(Bird bird) {
         try {
             String jsonBody = objectMapper.writeValueAsString(bird);
@@ -77,6 +99,11 @@ public class ApiClient {
         }
     }
 
+    /**
+     * Retrieves all sightings from the API.
+     *
+     * @return CompletableFuture containing a list of all sightings
+     */
     public CompletableFuture<List<Sighting>> getSightings() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/sightings"))
@@ -93,6 +120,12 @@ public class ApiClient {
                 });
     }
 
+    /**
+     * Creates a new sighting in the system.
+     *
+     * @param sighting The sighting to create
+     * @return CompletableFuture containing the created sighting
+     */
     public CompletableFuture<Sighting> createSighting(Sighting sighting) {
         try {
             SightingRequest request = new SightingRequest(
@@ -131,6 +164,13 @@ public class ApiClient {
         }
     }
 
+    /**
+     * Searches for birds based on name and/or color.
+     *
+     * @param name Optional parameter to filter birds by name
+     * @param color Optional parameter to filter birds by color
+     * @return CompletableFuture containing a list of matching birds
+     */
     public CompletableFuture<List<Bird>> searchBirds(String name, String color) {
         StringBuilder uriBuilder = new StringBuilder(BASE_URL + "/birds/search?");
         if (name != null && !name.isEmpty()) {
@@ -159,6 +199,13 @@ public class ApiClient {
                 });
     }
 
+    /**
+     * Searches for sightings based on bird name and/or location.
+     *
+     * @param birdName Optional parameter to filter sightings by bird name
+     * @param location Optional parameter to filter sightings by location
+     * @return CompletableFuture containing a list of matching sightings
+     */
     public CompletableFuture<List<Sighting>> searchSightings(String birdName, String location) {
         StringBuilder uriBuilder = new StringBuilder(BASE_URL + "/sightings/search?");
         if (birdName != null && !birdName.isEmpty()) {
@@ -187,6 +234,12 @@ public class ApiClient {
                 });
     }
 
+    /**
+     * Deletes a bird by its ID.
+     *
+     * @param birdId The ID of the bird to delete
+     * @return CompletableFuture that completes when the bird is deleted
+     */
     public CompletableFuture<Void> deleteBird(Long birdId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/birds/" + birdId))
@@ -203,6 +256,12 @@ public class ApiClient {
                 });
     }
 
+    /**
+     * Deletes a sighting by its ID.
+     *
+     * @param sightingId The ID of the sighting to delete
+     * @return CompletableFuture that completes when the sighting is deleted
+     */
     public CompletableFuture<Void> deleteSighting(Long sightingId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/sightings/" + sightingId))
@@ -219,6 +278,10 @@ public class ApiClient {
                 });
     }
 
+    /**
+     * Shuts down the executor service.
+     * Should be called when the client is no longer needed.
+     */
     public void shutdown() {
         executor.shutdown();
     }

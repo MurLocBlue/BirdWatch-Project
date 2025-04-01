@@ -4,10 +4,22 @@ import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
 /**
- * This class controls all aspects of the application's execution
+ * Main application class for the BirdWatch Plugin Datastore.
+ * Controls all aspects of the application's execution and lifecycle.
+ *
+ * @author Costin Marinescu
+ * @version 0.1
  */
 public class Application implements IApplication {
 
+	/**
+	 * Starts the application.
+	 * Initializes the BirdWatch plugin and performs any necessary setup.
+	 *
+	 * @param context The application context
+	 * @return The exit code (EXIT_OK for successful execution)
+	 * @throws Exception If an error occurs during startup
+	 */
 	@Override
 	public Object start(IApplicationContext context) throws Exception {
 		System.out.println("Hello Birds!");
@@ -16,6 +28,6 @@ public class Application implements IApplication {
 
 	@Override
 	public void stop() {
-		// nothing to do
+		// do nothing
 	}
 }
