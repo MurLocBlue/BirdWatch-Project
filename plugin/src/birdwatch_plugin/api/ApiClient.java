@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import birdwatch_plugin.model.Bird;
 import birdwatch_plugin.model.Sighting;
+import birdwatch_plugin.model.SightingRequest;
 
 public class ApiClient {
     private static final String BASE_URL = "http://localhost:8080/api";
@@ -43,6 +44,38 @@ public class ApiClient {
                 });
     }
 
+    public CompletableFuture<Bird> createBird(Bird bird) {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(bird);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/birds"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                            if (response.body() != null && !response.body().isEmpty()) {
+                                try {
+                                    return objectMapper.readValue(response.body(), Bird.class);
+                                } catch (Exception e) {
+                                    return bird;
+                                }
+                            } else {
+                                return bird;
+                            }
+                        } else {
+                            throw new RuntimeException("Server returned error status: " + response.statusCode());
+                        }
+                    });
+        } catch (Exception e) {
+            CompletableFuture<Bird> future = new CompletableFuture<>();
+            future.completeExceptionally(new RuntimeException("Failed to create bird", e));
+            return future;
+        }
+    }
+
     public CompletableFuture<List<Sighting>> getSightings() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/sightings"))
@@ -57,6 +90,44 @@ public class ApiClient {
                         throw new RuntimeException("Failed to parse sightings response", e);
                     }
                 });
+    }
+
+    public CompletableFuture<Sighting> createSighting(Sighting sighting) {
+        try {
+            SightingRequest request = new SightingRequest(
+                sighting.getBird().getId(),
+                sighting.getLocation(),
+                sighting.getSightingDate()
+            );
+
+            String jsonBody = objectMapper.writeValueAsString(request);
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/sightings"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+
+            return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                            if (response.body() != null && !response.body().isEmpty()) {
+                                try {
+                                    return objectMapper.readValue(response.body(), Sighting.class);
+                                } catch (Exception e) {
+                                    return sighting;
+                                }
+                            } else {
+                                return sighting;
+                            }
+                        } else {
+                            throw new RuntimeException("Server returned error status: " + response.statusCode());
+                        }
+                    });
+        } catch (Exception e) {
+            CompletableFuture<Sighting> future = new CompletableFuture<>();
+            future.completeExceptionally(new RuntimeException("Failed to create sighting", e));
+            return future;
+        }
     }
 
     public void shutdown() {
