@@ -1,4 +1,4 @@
-package birdwatch_plugin.api;
+package birdwatch_plugin_datastore.api;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -11,9 +11,10 @@ import java.net.URI;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import birdwatch_plugin.model.Bird;
-import birdwatch_plugin.model.Sighting;
-import birdwatch_plugin.model.SightingRequest;
+
+import birdwatch_plugin_datastore.model.Bird;
+import birdwatch_plugin_datastore.model.Sighting;
+import birdwatch_plugin_datastore.model.SightingRequest;
 
 public class ApiClient {
     private static final String BASE_URL = "http://localhost:8080/api";

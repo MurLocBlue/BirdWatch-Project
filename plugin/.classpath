@@ -7,12 +7,5 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="E:/Projects/BirdWatch-Project/plugin/external-deps/jackson-core-2.9.0.jar"/>
-	<classpathentry kind="lib" path="E:/Projects/BirdWatch-Project/plugin/external-deps/jackson-databind-2.9.0.jar"/>
-	<classpathentry kind="lib" path="E:/Projects/BirdWatch-Project/plugin/external-deps/jackson-annotations-2.9.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="external-deps/jackson-core-2.9.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="external-deps/jackson-databind-2.9.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="external-deps/jackson-annotations-2.9.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="external-deps/jackson-datatype-jsr310-2.9.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

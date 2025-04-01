@@ -1,4 +1,4 @@
-package birdwatch_plugin.model;
+package birdwatch_plugin_datastore.model;
 
 import java.time.LocalDateTime;
 

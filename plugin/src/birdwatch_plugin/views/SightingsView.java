@@ -22,13 +22,15 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.DateTime;
-import birdwatch_plugin.api.ApiClient;
-import birdwatch_plugin.model.Sighting;
+
+import birdwatch_plugin_datastore.api.ApiClient;
+import birdwatch_plugin_datastore.model.Bird;
+import birdwatch_plugin_datastore.model.Sighting;
+
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import birdwatch_plugin.model.Bird;
 import java.util.List;
 
 public class SightingsView {

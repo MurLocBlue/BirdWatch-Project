@@ -18,9 +18,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
-import birdwatch_plugin.api.ApiClient;
+
 import java.time.format.DateTimeFormatter;
-import birdwatch_plugin.model.Bird;
+
+import birdwatch_plugin_datastore.api.ApiClient;
+import birdwatch_plugin_datastore.model.Bird;
+
 import java.time.LocalDateTime;
 
 public class BirdsView {
