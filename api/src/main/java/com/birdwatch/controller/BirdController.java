@@ -35,6 +35,15 @@ public class BirdController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/search")
+    public List<BirdDTO> searchBirds(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String color) {
+        return birdService.searchBirds(name, color).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BirdDTO> getBirdById(@PathVariable Long id) {
         return birdService.findById(id)

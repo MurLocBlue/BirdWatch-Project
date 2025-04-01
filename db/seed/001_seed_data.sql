@@ -1,6 +1,6 @@
 -- Insert example birds
 INSERT INTO birds (name, color, weight, height) VALUES
-('Pormubel', 'Gri cu Alb', 8.50, 11.00),
+('Porumbel', 'Gri cu Alb', 8.50, 11.00),
 ('Mierla', 'Negru', 95.00, 25.00),
 ('Ciocarlie', 'Maro', 25.00, 18.00),
 ('Corb', 'Negru', 350.00, 35.00),
@@ -9,6 +9,8 @@ INSERT INTO birds (name, color, weight, height) VALUES
 -- Insert example sightings
 INSERT INTO sightings (bird_id, location, sighting_date) VALUES
 (1, 'Parcul Cismigiu', '2024-03-30 08:00:00'),
+(1, 'Parcul Herastrau', '2024-04-01 08:00:00'),
+(1, 'Parcul Tineretului', '2024-04-02 08:00:00'),
 (2, 'Parcul Herastrau', '2024-03-30 09:15:00'),
 (3, 'Parcul Tineretului', '2024-03-29 14:30:00'),
 (4, 'Parcul Cismigiu', '2024-03-28 11:00:00'),

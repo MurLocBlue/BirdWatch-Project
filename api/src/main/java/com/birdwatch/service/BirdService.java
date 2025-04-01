@@ -29,4 +29,8 @@ public class BirdService {
     public void deleteById(Long id) {
         birdRepository.deleteById(id);
     }
+
+    public List<Bird> searchBirds(String name, String color) {
+        return birdRepository.searchBirds(name, color);
+    }
 } 
