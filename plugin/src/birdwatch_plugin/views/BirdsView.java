@@ -6,12 +6,22 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Dialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
 import birdwatch_plugin.api.ApiClient;
 import java.time.format.DateTimeFormatter;
 import birdwatch_plugin.model.Bird;
+import java.time.LocalDateTime;
 
 public class BirdsView {
     private TableViewer viewer;
@@ -25,9 +35,57 @@ public class BirdsView {
 
     public Composite createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new FillLayout());
+        container.setLayout(new GridLayout(1, false));
 
-        viewer = new TableViewer(container, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+        // Create button container
+        Composite buttonContainer = new Composite(container, SWT.NONE);
+        buttonContainer.setLayout(new GridLayout(1, false));
+        buttonContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+        // Add Bird button
+        Button addButton = new Button(buttonContainer, SWT.PUSH);
+        addButton.setText("Add New Bird");
+        addButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        addButton.addListener(SWT.Selection, event -> {
+            AddBirdDialog dialog = new AddBirdDialog(Display.getCurrent().getActiveShell());
+            dialog.open();
+            if (dialog.getBird() != null) {
+                addButton.setEnabled(false); // Disable button while processing
+                apiClient.createBird(dialog.getBird())
+                    .thenAccept(bird -> {
+                        Display.getDefault().asyncExec(() -> {
+                            try {
+                                loadData(); // Refresh the table
+                                MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION);
+                                messageBox.setMessage("Bird added successfully!");
+                                messageBox.open();
+                            } catch (Exception e) {
+                                MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                                errorBox.setMessage("Error refreshing table: " + e.getMessage());
+                                errorBox.open();
+                            } finally {
+                                addButton.setEnabled(true); // Re-enable button
+                            }
+                        });
+                    })
+                    .exceptionally(throwable -> {
+                        Display.getDefault().asyncExec(() -> {
+                            MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                            errorBox.setMessage("Error adding bird: " + throwable.getMessage());
+                            errorBox.open();
+                            addButton.setEnabled(true); // Re-enable button
+                        });
+                        return null;
+                    });
+            }
+        });
+
+        // Create table container
+        Composite tableContainer = new Composite(container, SWT.NONE);
+        tableContainer.setLayout(new FillLayout());
+        tableContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        viewer = new TableViewer(tableContainer, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
         table = viewer.getTable();
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
@@ -157,6 +215,86 @@ public class BirdsView {
     public void dispose() {
         if (apiClient != null) {
             apiClient.shutdown();
+        }
+    }
+
+    private class AddBirdDialog extends Dialog {
+        private Bird bird;
+        private Text nameText;
+        private Text colorText;
+        private Text weightText;
+        private Text heightText;
+
+        public AddBirdDialog(Shell parent) {
+            super(parent);
+        }
+
+        public Bird getBird() {
+            return bird;
+        }
+
+        public void open() {
+            Shell parent = getParent();
+            Shell shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+            shell.setText("Add New Bird");
+            shell.setLayout(new GridLayout(2, false));
+
+            // Name field
+            new Label(shell, SWT.NONE).setText("Name:");
+            nameText = new Text(shell, SWT.BORDER);
+            nameText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+            // Color field
+            new Label(shell, SWT.NONE).setText("Color:");
+            colorText = new Text(shell, SWT.BORDER);
+            colorText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+            // Weight field
+            new Label(shell, SWT.NONE).setText("Weight (kg):");
+            weightText = new Text(shell, SWT.BORDER);
+            weightText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+            // Height field
+            new Label(shell, SWT.NONE).setText("Height (cm):");
+            heightText = new Text(shell, SWT.BORDER);
+            heightText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+            // Buttons
+            Composite buttonComposite = new Composite(shell, SWT.NONE);
+            buttonComposite.setLayout(new GridLayout(2, true));
+            buttonComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+
+            Button okButton = new Button(buttonComposite, SWT.PUSH);
+            okButton.setText("OK");
+            okButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+            okButton.addListener(SWT.Selection, event -> {
+                try {
+                    bird = new Bird();
+                    bird.setName(nameText.getText());
+                    bird.setColor(colorText.getText());
+                    bird.setWeight(Double.parseDouble(weightText.getText()));
+                    bird.setHeight(Double.parseDouble(heightText.getText()));
+                    bird.setCreatedAt(LocalDateTime.now());
+                    shell.dispose();
+                } catch (NumberFormatException e) {
+                    // Handle invalid number input
+                }
+            });
+
+            Button cancelButton = new Button(buttonComposite, SWT.PUSH);
+            cancelButton.setText("Cancel");
+            cancelButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+            cancelButton.addListener(SWT.Selection, event -> shell.dispose());
+
+            shell.pack();
+            shell.open();
+
+            Display display = parent.getDisplay();
+            while (!shell.isDisposed()) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            }
         }
     }
 } 
