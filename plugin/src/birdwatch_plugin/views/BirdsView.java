@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.jface.viewers.IStructuredSelection;
 
 import java.time.format.DateTimeFormatter;
 
@@ -71,13 +72,13 @@ public class BirdsView {
 
         // Create button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
-        buttonContainer.setLayout(new GridLayout(1, false));
+        buttonContainer.setLayout(new GridLayout(2, false));
         buttonContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
         // Add Bird button
         Button addButton = new Button(buttonContainer, SWT.PUSH);
         addButton.setText("Add New Bird");
-        addButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        addButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
         addButton.addListener(SWT.Selection, event -> {
             AddBirdDialog dialog = new AddBirdDialog(Display.getCurrent().getActiveShell());
             dialog.open();
@@ -106,6 +107,54 @@ public class BirdsView {
                             errorBox.setMessage("Error adding bird: " + throwable.getMessage());
                             errorBox.open();
                             addButton.setEnabled(true); // Re-enable button
+                        });
+                        return null;
+                    });
+            }
+        });
+
+        // Delete Bird button
+        Button deleteButton = new Button(buttonContainer, SWT.PUSH);
+        deleteButton.setText("Delete Selected Bird");
+        deleteButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+        deleteButton.addListener(SWT.Selection, event -> {
+            IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+            Bird selectedBird = (Bird) selection.getFirstElement();
+            
+            if (selectedBird == null) {
+                MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR | SWT.OK);
+                errorBox.setMessage("Please select a bird to delete");
+                errorBox.open();
+                return;
+            }
+
+            MessageBox confirmBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+            confirmBox.setMessage("Are you sure you want to delete this bird?");
+            if (confirmBox.open() == SWT.YES) {
+                deleteButton.setEnabled(false); // Disable button while processing
+                apiClient.deleteBird(selectedBird.getId())
+                    .thenAccept(v -> {
+                        Display.getDefault().asyncExec(() -> {
+                            try {
+                                loadData(); // Refresh the table
+                                MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION);
+                                messageBox.setMessage("Bird deleted successfully!");
+                                messageBox.open();
+                            } catch (Exception e) {
+                                MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                                errorBox.setMessage("Error refreshing table: " + e.getMessage());
+                                errorBox.open();
+                            } finally {
+                                deleteButton.setEnabled(true); // Re-enable button
+                            }
+                        });
+                    })
+                    .exceptionally(throwable -> {
+                        Display.getDefault().asyncExec(() -> {
+                            MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                            errorBox.setMessage("Error deleting bird: " + throwable.getMessage());
+                            errorBox.open();
+                            deleteButton.setEnabled(true); // Re-enable button
                         });
                         return null;
                     });
@@ -226,7 +275,7 @@ public class BirdsView {
         });
     }
 
-    private void loadData() {
+    protected void loadData() {
         apiClient.getBirds().thenAccept(birds -> {
             viewer.getTable().getDisplay().asyncExec(() -> {
                 try {

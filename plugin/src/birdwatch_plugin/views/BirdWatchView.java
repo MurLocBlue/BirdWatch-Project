@@ -5,6 +5,8 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 
 public class BirdWatchView extends ViewPart {
@@ -30,6 +32,19 @@ public class BirdWatchView extends ViewPart {
         sightingsTab.setText("Sightings");
         sightingsView = new SightingsView();
         sightingsTab.setControl(sightingsView.createControl(tabFolder));
+
+        // Add tab selection listener to refresh data
+        tabFolder.addListener(SWT.Selection, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                int selectedIndex = tabFolder.getSelectionIndex();
+                if (selectedIndex == 0) { // Birds tab
+                    birdsView.loadData();
+                } else if (selectedIndex == 1) { // Sightings tab
+                    sightingsView.loadData();
+                }
+            }
+        });
     }
 
     @Override

@@ -187,6 +187,38 @@ public class ApiClient {
                 });
     }
 
+    public CompletableFuture<Void> deleteBird(Long birdId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/birds/" + birdId))
+                .DELETE()
+                .build();
+
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        return null;
+                    } else {
+                        throw new RuntimeException("Server returned error status: " + response.statusCode());
+                    }
+                });
+    }
+
+    public CompletableFuture<Void> deleteSighting(Long sightingId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/sightings/" + sightingId))
+                .DELETE()
+                .build();
+
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        return null;
+                    } else {
+                        throw new RuntimeException("Server returned error status: " + response.statusCode());
+                    }
+                });
+    }
+
     public void shutdown() {
         executor.shutdown();
     }

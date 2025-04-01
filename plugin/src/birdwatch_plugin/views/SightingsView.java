@@ -78,13 +78,13 @@ public class SightingsView {
 
         // Create button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
-        buttonContainer.setLayout(new GridLayout(1, false));
+        buttonContainer.setLayout(new GridLayout(2, false));
         buttonContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
         // Add Sighting button
         Button addButton = new Button(buttonContainer, SWT.PUSH);
         addButton.setText("Add New Sighting");
-        addButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        addButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
         addButton.addListener(SWT.Selection, event -> {
             AddSightingDialog dialog = new AddSightingDialog(Display.getCurrent().getActiveShell());
             dialog.open();
@@ -113,6 +113,54 @@ public class SightingsView {
                             errorBox.setMessage("Error adding sighting: " + throwable.getMessage());
                             errorBox.open();
                             addButton.setEnabled(true); // Re-enable button
+                        });
+                        return null;
+                    });
+            }
+        });
+
+        // Delete Sighting button
+        Button deleteButton = new Button(buttonContainer, SWT.PUSH);
+        deleteButton.setText("Delete Selected Sighting");
+        deleteButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+        deleteButton.addListener(SWT.Selection, event -> {
+            IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+            Sighting selectedSighting = (Sighting) selection.getFirstElement();
+            
+            if (selectedSighting == null) {
+                MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR | SWT.OK);
+                errorBox.setMessage("Please select a sighting to delete");
+                errorBox.open();
+                return;
+            }
+
+            MessageBox confirmBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+            confirmBox.setMessage("Are you sure you want to delete this sighting?");
+            if (confirmBox.open() == SWT.YES) {
+                deleteButton.setEnabled(false); // Disable button while processing
+                apiClient.deleteSighting(selectedSighting.getId())
+                    .thenAccept(v -> {
+                        Display.getDefault().asyncExec(() -> {
+                            try {
+                                loadData(); // Refresh the table
+                                MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION);
+                                messageBox.setMessage("Sighting deleted successfully!");
+                                messageBox.open();
+                            } catch (Exception e) {
+                                MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                                errorBox.setMessage("Error refreshing table: " + e.getMessage());
+                                errorBox.open();
+                            } finally {
+                                deleteButton.setEnabled(true); // Re-enable button
+                            }
+                        });
+                    })
+                    .exceptionally(throwable -> {
+                        Display.getDefault().asyncExec(() -> {
+                            MessageBox errorBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                            errorBox.setMessage("Error deleting sighting: " + throwable.getMessage());
+                            errorBox.open();
+                            deleteButton.setEnabled(true); // Re-enable button
                         });
                         return null;
                     });
@@ -339,7 +387,7 @@ public class SightingsView {
         });
     }
 
-    private void loadData() {
+    protected void loadData() {
         apiClient.getSightings().thenAccept(sightings -> {
             viewer.getTable().getDisplay().asyncExec(() -> {
                 try {
