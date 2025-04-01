@@ -4,9 +4,11 @@ A simple Eclipse plugin based application for tracking and managing bird sightin
 
 ## Getting Started 🚀
 
+You can start by either cloning the Git Repo or by heading to the [Latest Release](https://github.com/MurLocBlue/BirdWatch-Project/releases) page.
+
 ### Backend 🔧
 
-#### Using Docker (Recommended)
+#### Using Bash (Recommended)
 1. Open a Bash Terminal in the root of the project
 2. Run the start script: `./start.sh`
 
@@ -17,7 +19,7 @@ Alternatively, you can run the Docker commands manually:
 1. Open a Terminal in the root of the project and run `docker-compose build`
 2. Once the project is built, run `docker-compose up -d` to start the Posgres Database and Spring API Service
 
-To stop all of the containers, simply run `docker-compose down` or if you want to remove all the containers run `docker-compose down -v`
+To stop and remove all of the containers, simply run `docker-compose down`
 
 ### Frontend 💻
 
@@ -84,3 +86,7 @@ To stop the UI plugin, simply close the window
 
 ### Sightings
 ![Sightings](screenshots/sightings.png)
+
+## Notes 📄
+
+This app was built as part of a hiring process for Spirent. The following [Specifications](specifications/iTestProgramExercise.pdf) were followed.
