@@ -5,6 +5,7 @@ import com.birdwatch.repository.SightingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,5 +29,9 @@ public class SightingService {
 
     public void deleteById(Long id) {
         sightingRepository.deleteById(id);
+    }
+
+    public List<Sighting> searchSightings(String birdName, String location) {
+        return sightingRepository.searchSightings(birdName, location);
     }
 } 

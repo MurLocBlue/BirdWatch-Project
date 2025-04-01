@@ -7,6 +7,7 @@ import com.birdwatch.dto.SightingRequest;
 import com.birdwatch.service.SightingService;
 import com.birdwatch.service.BirdService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +47,16 @@ public class SightingController {
     @GetMapping
     public List<SightingDTO> getAllSightings() {
         return sightingService.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/search")
+    public List<SightingDTO> searchSightings(
+            @RequestParam(required = false) String birdName,
+            @RequestParam(required = false) String location) {
+        
+        return sightingService.searchSightings(birdName, location).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
