@@ -27,6 +27,13 @@ import birdwatch_plugin_datastore.model.Bird;
 
 import java.time.LocalDateTime;
 
+/**
+ * View class for managing birds in the BirdWatch system.
+ * Provides functionality to view, add, delete, and search birds.
+ *
+ * @author Costin Marinescu
+ * @version 0.1
+ */
 public class BirdsView {
     private TableViewer viewer;
     private Table table;
@@ -35,10 +42,21 @@ public class BirdsView {
     private Text nameSearchText;
     private Text colorSearchText;
 
+    /**
+     * Constructs a new BirdsView.
+     * Initializes the API client for bird operations.
+     */
     public BirdsView() {
         this.apiClient = new ApiClient();
     }
 
+    /**
+     * Creates the control for this view.
+     * Sets up the search fields, buttons, and table for bird management.
+     *
+     * @param parent The parent composite
+     * @return The created composite containing all controls
+     */
     public Composite createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
@@ -183,6 +201,10 @@ public class BirdsView {
         return container;
     }
 
+    /**
+     * Creates and configures the table columns for displaying bird information.
+     * Sets up columns for ID, Name, Color, Weight, Height, and Creation Date.
+     */
     private void createColumns() {
         // ID column
         TableViewerColumn idColumn = new TableViewerColumn(viewer, SWT.NONE);
@@ -275,6 +297,10 @@ public class BirdsView {
         });
     }
 
+    /**
+     * Loads bird data from the API and displays it in the table.
+     * Refreshes the table viewer with the latest bird information.
+     */
     protected void loadData() {
         apiClient.getBirds().thenAccept(birds -> {
             viewer.getTable().getDisplay().asyncExec(() -> {
@@ -293,12 +319,20 @@ public class BirdsView {
         });
     }
 
+    /**
+     * Disposes of the view's resources.
+     * Cleans up any allocated resources.
+     */
     public void dispose() {
         if (apiClient != null) {
             apiClient.shutdown();
         }
     }
 
+    /**
+     * Performs a search based on the current name and color filter values.
+     * Updates the table with filtered results.
+     */
     private void performSearch() {
         String name = nameSearchText.getText().trim();
         String color = colorSearchText.getText().trim();
@@ -324,6 +358,10 @@ public class BirdsView {
         }
     }
 
+    /**
+     * Dialog class for adding new birds.
+     * Provides input fields for bird properties and handles validation.
+     */
     private class AddBirdDialog extends Dialog {
         private Bird bird;
         private Text nameText;
@@ -331,14 +369,28 @@ public class BirdsView {
         private Text weightText;
         private Text heightText;
 
+        /**
+         * Constructs a new AddBirdDialog.
+         *
+         * @param parent The parent shell
+         */
         public AddBirdDialog(Shell parent) {
             super(parent);
         }
 
+        /**
+         * Gets the created bird from the dialog.
+         *
+         * @return The created bird, or null if dialog was cancelled
+         */
         public Bird getBird() {
             return bird;
         }
 
+        /**
+         * Opens the dialog and handles user input.
+         * Creates a new bird if the user confirms the input.
+         */
         public void open() {
             Shell parent = getParent();
             Shell shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);

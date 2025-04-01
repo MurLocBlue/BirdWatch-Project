@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Birdwatch_plugin_datastore
 Bundle-SymbolicName: birdwatch_plugin_datastore;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 0.1
 Bundle-Activator: birdwatch_plugin_datastore.Activator
 Bundle-Vendor: BirdWatch
 Require-Bundle: org.eclipse.core.runtime

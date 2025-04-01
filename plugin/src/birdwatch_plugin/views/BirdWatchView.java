@@ -9,12 +9,26 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 
+/**
+ * Main view class for the BirdWatch plugin.
+ * Provides a tabbed interface containing Birds and Sightings views.
+ *
+ * @author Costin Marinescu
+ * @version 0.1
+ */
 public class BirdWatchView extends ViewPart {
+    /** The unique identifier for this view */
     public static final String ID = "birdwatch_plugin.views.BirdWatchView";
     private CTabFolder tabFolder;
     private BirdsView birdsView;
     private SightingsView sightingsView;
 
+    /**
+     * Creates the view's controls and initializes the tabbed interface.
+     * Sets up the Birds and Sightings tabs with their respective views.
+     *
+     * @param parent The parent composite
+     */
     @Override
     public void createPartControl(Composite parent) {
         parent.setLayout(new FillLayout());
@@ -47,11 +61,18 @@ public class BirdWatchView extends ViewPart {
         });
     }
 
+    /**
+     * Sets focus to the tab folder when the view is activated.
+     */
     @Override
     public void setFocus() {
         tabFolder.setFocus();
     }
 
+    /**
+     * Disposes of the view's resources.
+     * Cleans up the Birds and Sightings views.
+     */
     @Override
     public void dispose() {
         if (birdsView != null) {
