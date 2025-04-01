@@ -33,6 +33,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * View class for managing bird sightings in the BirdWatch system.
+ * Provides functionality to view, add, delete, and search bird sightings.
+ *
+ * @author Costin Marinescu
+ * @version 0.1
+ */
 public class SightingsView {
     private TableViewer viewer;
     private Table table;
@@ -41,10 +48,21 @@ public class SightingsView {
     private Text birdNameSearchText;
     private Text locationSearchText;
 
+    /**
+     * Constructs a new SightingsView.
+     * Initializes the API client for sighting operations.
+     */
     public SightingsView() {
         this.apiClient = new ApiClient();
     }
 
+    /**
+     * Creates the control for this view.
+     * Sets up the search fields, buttons, and table for sighting management.
+     *
+     * @param parent The parent composite
+     * @return The created composite containing all controls
+     */
     public Composite createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
@@ -189,6 +207,10 @@ public class SightingsView {
         return container;
     }
 
+    /**
+     * Dialog class for adding new sightings.
+     * Provides input fields for sighting properties and handles validation.
+     */
     private class AddSightingDialog extends Dialog {
         private Sighting sighting;
         private Text locationText;
@@ -196,14 +218,28 @@ public class SightingsView {
         private ComboViewer birdCombo;
         private List<Bird> birds;
 
+        /**
+         * Constructs a new AddSightingDialog.
+         *
+         * @param parent The parent shell
+         */
         public AddSightingDialog(Shell parent) {
             super(parent);
         }
 
+        /**
+         * Gets the created sighting from the dialog.
+         *
+         * @return The created sighting, or null if dialog was cancelled
+         */
         public Sighting getSighting() {
             return sighting;
         }
 
+        /**
+         * Opens the dialog and handles user input.
+         * Creates a new sighting if the user confirms the input.
+         */
         public void open() {
             Shell parent = getParent();
             Shell shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
@@ -309,6 +345,10 @@ public class SightingsView {
         }
     }
 
+    /**
+     * Creates and configures the table columns for displaying sighting information.
+     * Sets up columns for ID, Bird Name, Location, Sighting Date, and Creation Date.
+     */
     private void createColumns() {
         // ID column
         TableViewerColumn idColumn = new TableViewerColumn(viewer, SWT.NONE);
@@ -387,6 +427,10 @@ public class SightingsView {
         });
     }
 
+    /**
+     * Loads sighting data from the API and displays it in the table.
+     * Refreshes the table viewer with the latest sighting information.
+     */
     protected void loadData() {
         apiClient.getSightings().thenAccept(sightings -> {
             viewer.getTable().getDisplay().asyncExec(() -> {
@@ -405,6 +449,10 @@ public class SightingsView {
         });
     }
 
+    /**
+     * Performs a search based on the current bird name and location filter values.
+     * Updates the table with filtered results.
+     */
     private void performSearch() {
         String birdName = birdNameSearchText.getText().trim();
         String location = locationSearchText.getText().trim();
@@ -430,6 +478,10 @@ public class SightingsView {
         }
     }
 
+    /**
+     * Disposes of the view's resources.
+     * Cleans up any allocated resources.
+     */
     public void dispose() {
         if (apiClient != null) {
             apiClient.shutdown();
