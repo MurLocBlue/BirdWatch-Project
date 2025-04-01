@@ -130,6 +130,62 @@ public class ApiClient {
         }
     }
 
+    public CompletableFuture<List<Bird>> searchBirds(String name, String color) {
+        StringBuilder uriBuilder = new StringBuilder(BASE_URL + "/birds/search?");
+        if (name != null && !name.isEmpty()) {
+            uriBuilder.append("name=").append(name);
+        }
+        if (color != null && !color.isEmpty()) {
+            if (uriBuilder.toString().endsWith("?")) {
+                uriBuilder.append("color=").append(color);
+            } else {
+                uriBuilder.append("&color=").append(color);
+            }
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(uriBuilder.toString()))
+                .GET()
+                .build();
+
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    try {
+                        return objectMapper.readValue(response.body(), new TypeReference<List<Bird>>() {});
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to parse birds search response", e);
+                    }
+                });
+    }
+
+    public CompletableFuture<List<Sighting>> searchSightings(String birdName, String location) {
+        StringBuilder uriBuilder = new StringBuilder(BASE_URL + "/sightings/search?");
+        if (birdName != null && !birdName.isEmpty()) {
+            uriBuilder.append("birdName=").append(birdName);
+        }
+        if (location != null && !location.isEmpty()) {
+            if (uriBuilder.toString().endsWith("?")) {
+                uriBuilder.append("location=").append(location);
+            } else {
+                uriBuilder.append("&location=").append(location);
+            }
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(uriBuilder.toString()))
+                .GET()
+                .build();
+
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    try {
+                        return objectMapper.readValue(response.body(), new TypeReference<List<Sighting>>() {});
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to parse sightings search response", e);
+                    }
+                });
+    }
+
     public void shutdown() {
         executor.shutdown();
     }

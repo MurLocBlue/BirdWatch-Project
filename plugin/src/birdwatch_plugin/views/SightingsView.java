@@ -36,6 +36,8 @@ public class SightingsView {
     private Table table;
     private ApiClient apiClient;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private Text birdNameSearchText;
+    private Text locationSearchText;
 
     public SightingsView() {
         this.apiClient = new ApiClient();
@@ -44,6 +46,33 @@ public class SightingsView {
     public Composite createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
+
+        // Create search container
+        Composite searchContainer = new Composite(container, SWT.NONE);
+        searchContainer.setLayout(new GridLayout(4, false));
+        searchContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+        // Bird name search label
+        Label birdNameSearchLabel = new Label(searchContainer, SWT.NONE);
+        birdNameSearchLabel.setText("Bird Name:");
+        birdNameSearchLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        // Bird name search text field
+        birdNameSearchText = new Text(searchContainer, SWT.BORDER);
+        birdNameSearchText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        // Location search label
+        Label locationSearchLabel = new Label(searchContainer, SWT.NONE);
+        locationSearchLabel.setText("Location:");
+        locationSearchLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        // Location search text field
+        locationSearchText = new Text(searchContainer, SWT.BORDER);
+        locationSearchText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        // Add search listeners
+        birdNameSearchText.addListener(SWT.Modify, event -> performSearch());
+        locationSearchText.addListener(SWT.Modify, event -> performSearch());
 
         // Create button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
@@ -324,6 +353,31 @@ public class SightingsView {
             throwable.printStackTrace();
             return null;
         });
+    }
+
+    private void performSearch() {
+        String birdName = birdNameSearchText.getText().trim();
+        String location = locationSearchText.getText().trim();
+        
+        if (!birdName.isEmpty() || !location.isEmpty()) {
+            apiClient.searchSightings(birdName, location).thenAccept(sightings -> {
+                viewer.getTable().getDisplay().asyncExec(() -> {
+                    try {
+                        viewer.setInput(sightings);
+                        System.out.println("Successfully loaded " + sightings.size() + " sightings from search");
+                    } catch (Exception e) {
+                        System.err.println("Error setting sightings search data: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            }).exceptionally(throwable -> {
+                System.err.println("Error searching sightings: " + throwable.getMessage());
+                throwable.printStackTrace();
+                return null;
+            });
+        } else {
+            loadData(); // Reload all sightings when both search fields are cleared
+        }
     }
 
     public void dispose() {

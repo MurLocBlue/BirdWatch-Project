@@ -28,6 +28,8 @@ public class BirdsView {
     private Table table;
     private ApiClient apiClient;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private Text nameSearchText;
+    private Text colorSearchText;
 
     public BirdsView() {
         this.apiClient = new ApiClient();
@@ -36,6 +38,33 @@ public class BirdsView {
     public Composite createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
+
+        // Create search container
+        Composite searchContainer = new Composite(container, SWT.NONE);
+        searchContainer.setLayout(new GridLayout(4, false));
+        searchContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+        // Name search label
+        Label nameSearchLabel = new Label(searchContainer, SWT.NONE);
+        nameSearchLabel.setText("Name:");
+        nameSearchLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        // Name search text field
+        nameSearchText = new Text(searchContainer, SWT.BORDER);
+        nameSearchText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        // Color search label
+        Label colorSearchLabel = new Label(searchContainer, SWT.NONE);
+        colorSearchLabel.setText("Color:");
+        colorSearchLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        // Color search text field
+        colorSearchText = new Text(searchContainer, SWT.BORDER);
+        colorSearchText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        // Add search listeners
+        nameSearchText.addListener(SWT.Modify, event -> performSearch());
+        colorSearchText.addListener(SWT.Modify, event -> performSearch());
 
         // Create button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
@@ -215,6 +244,31 @@ public class BirdsView {
     public void dispose() {
         if (apiClient != null) {
             apiClient.shutdown();
+        }
+    }
+
+    private void performSearch() {
+        String name = nameSearchText.getText().trim();
+        String color = colorSearchText.getText().trim();
+        
+        if (!name.isEmpty() || !color.isEmpty()) {
+            apiClient.searchBirds(name, color).thenAccept(birds -> {
+                viewer.getTable().getDisplay().asyncExec(() -> {
+                    try {
+                        viewer.setInput(birds);
+                        System.out.println("Successfully loaded " + birds.size() + " birds from search");
+                    } catch (Exception e) {
+                        System.err.println("Error setting birds search data: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            }).exceptionally(throwable -> {
+                System.err.println("Error searching birds: " + throwable.getMessage());
+                throwable.printStackTrace();
+                return null;
+            });
+        } else {
+            loadData(); // Reload all birds when both search fields are cleared
         }
     }
 
