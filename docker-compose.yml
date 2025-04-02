@@ -12,6 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./db/migration/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
       - ./db/seed/001_seed_data.sql:/docker-entrypoint-initdb.d/002_seed_data.sql
+      - ./db/migration/002_create_test_db.sql:/docker-entrypoint-initdb.d/003_create_test_db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

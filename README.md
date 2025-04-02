@@ -10,7 +10,8 @@ You can start by either cloning the Git Repo or by heading to the [Latest Releas
 
 #### Using Bash (Recommended)
 1. Open a Bash Terminal in the root of the project
-2. Run the start script: `./start.sh`
+2. Make the start script executable: `chmod +x run_tests.sh`
+3. Run the start script: `./start.sh`
 
 To stop the application: `./stop.sh`
 
@@ -28,6 +29,27 @@ To stop and remove all of the containers, simply run `docker-compose down`
 3. Run the plugin
 
 To stop the UI plugin, simply close the window
+
+### Running Tests 🧪
+
+#### Using the Test Script (Recommended)
+1. Open a Bash Terminal in the root of the project
+2. Make the test script executable: `chmod +x run_tests.sh`
+3. Run the tests: `./run_tests.sh`
+
+The script will:
+- Check if Docker is running
+- Ensure the PostgreSQL database container is up
+- Wait for the database to be ready
+- Run all tests using Maven
+
+#### Manual Test Execution
+Alternatively, you can run the tests manually:
+1. Ensure Docker is running
+2. Start the containers: `docker-compose up -d`
+3. Wait for the database to be ready
+4. Navigate to the api directory: `cd api`
+5. Run the tests: `mvn test`
 
 ## Technologies Used 🛠️
 
@@ -49,6 +71,12 @@ To stop the UI plugin, simply close the window
 - Docker Compose
 - PostgreSQL
 - Bash
+
+### Testing
+- JUnit 5
+- Mockito
+- Spring Boot Test
+- Maven Surefire Plugin
 
 ## API Documentation 📚
 
