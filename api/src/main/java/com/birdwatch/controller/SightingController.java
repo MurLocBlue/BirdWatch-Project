@@ -7,13 +7,18 @@ import com.birdwatch.dto.SightingRequest;
 import com.birdwatch.service.SightingService;
 import com.birdwatch.service.BirdService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import java.time.format.DateTimeFormatter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import com.birdwatch.utils.InputSanitizer;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 /**
  * REST controller for managing bird sighting operations.
@@ -67,18 +72,59 @@ public class SightingController {
     }
 
     /**
-     * Searches for bird sightings based on bird name and/or location.
+     * Searches for bird sightings based on bird name, location, and/or date range.
      *
      * @param birdName Optional parameter to filter sightings by bird name
      * @param location Optional parameter to filter sightings by location
+     * @param startDate Optional parameter to filter sightings by start date
+     * @param endDate Optional parameter to filter sightings by end date
      * @return A list of matching sightings as DTOs
      */
     @GetMapping("/search")
     public List<SightingDTO> searchSightings(
             @RequestParam(required = false) String birdName,
-            @RequestParam(required = false) String location) {
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+
+        // Sanitize string inputs
+        try {
+            birdName = InputSanitizer.sanitizeInput(birdName);
+            location = InputSanitizer.sanitizeInput(location);
+            startDate = InputSanitizer.sanitizeInput(startDate);
+            endDate = InputSanitizer.sanitizeInput(endDate);
+        } catch (ResponseStatusException e) {
+            throw e;
+        }
+
+        // Get all sightings from service
+        List<Sighting> sightings = sightingService.searchSightings(birdName, location);
         
-        return sightingService.searchSightings(birdName, location).stream()
+        // Filter by date range if dates are provided
+        if (startDate != null && !startDate.isEmpty() || endDate != null && !endDate.isEmpty()) {
+            try {
+                final LocalDateTime startDateTime = startDate != null && !startDate.isEmpty() ? 
+                    LocalDateTime.parse(startDate, DateTimeFormatter.ISO_DATE_TIME) : null;
+                
+                final LocalDateTime endDateTime = endDate != null && !endDate.isEmpty() ? 
+                    LocalDateTime.parse(endDate, DateTimeFormatter.ISO_DATE_TIME) : null;
+                
+                sightings = sightings.stream()
+                    .filter(sighting -> {
+                        boolean matchesStart = startDateTime == null || 
+                            !sighting.getSightingDate().isBefore(startDateTime);
+                        boolean matchesEnd = endDateTime == null || 
+                            !sighting.getSightingDate().isAfter(endDateTime);
+                        return matchesStart && matchesEnd;
+                    })
+                    .collect(Collectors.toList());
+            } catch (DateTimeParseException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Invalid date format. Please use ISO-8601 format (e.g., 2024-04-14T17:36:21)");
+            }
+        }
+        
+        return sightings.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

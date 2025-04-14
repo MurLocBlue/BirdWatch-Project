@@ -5,20 +5,26 @@ CREATE DATABASE "bird-watch-test";
 \c "bird-watch-test"
 
 -- Create the same schema as the main database
+
+-- Create birds table
 CREATE TABLE birds (
-    id BIGSERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     color VARCHAR(50) NOT NULL,
-    height DOUBLE PRECISION NOT NULL,
-    weight DOUBLE PRECISION NOT NULL,
-    created_at TIMESTAMP
+    weight DECIMAL(5, 2) NOT NULL,  -- Weight in grams
+    height DECIMAL(5, 2) NOT NULL,  -- Height in centimeters
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create sightings table
 CREATE TABLE sightings (
-    id BIGSERIAL PRIMARY KEY,
-    bird_id BIGINT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    bird_id INTEGER REFERENCES birds(id),
     location VARCHAR(100) NOT NULL,
-    sighting_date TIMESTAMP NOT NULL,
-    created_at TIMESTAMP,
-    FOREIGN KEY (bird_id) REFERENCES birds(id)
-); 
+    sighting_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for better query performance
+CREATE INDEX idx_sightings_bird_id ON sightings(bird_id);
+CREATE INDEX idx_sightings_sighting_date ON sightings(sighting_date); 

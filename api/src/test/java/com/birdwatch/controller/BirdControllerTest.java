@@ -89,6 +89,7 @@ class BirdControllerTest {
      * Verifies that the endpoint returns the correct bird when it exists.
      * Checks both the response status and the returned bird's properties.
      */
+    @SuppressWarnings("null")
     @Test
     void getBirdById_WhenBirdExists_ShouldReturnBird() {
         // Arrange
@@ -150,6 +151,7 @@ class BirdControllerTest {
      * Checks that both findById and save methods are called on the service
      * and the returned bird matches the updated data.
      */
+    @SuppressWarnings("null")
     @Test
     void updateBird_WhenBirdExists_ShouldReturnUpdatedBird() {
         // Arrange
