@@ -3,9 +3,11 @@ package com.birdwatch.controller;
 import com.birdwatch.entity.Bird;
 import com.birdwatch.dto.BirdDTO;
 import com.birdwatch.service.BirdService;
+import com.birdwatch.utils.InputSanitizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,6 +63,15 @@ public class BirdController {
     public List<BirdDTO> searchBirds(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String color) {
+            
+        // Sanitize string inputs
+        try {
+            name = InputSanitizer.sanitizeInput(name);
+            color = InputSanitizer.sanitizeInput(color);
+        } catch (ResponseStatusException e) {
+            throw e;
+        }
+
         return birdService.searchBirds(name, color).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

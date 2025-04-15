@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -47,6 +48,7 @@ public class SightingControllerTest {
 
     private Bird testBird;
     private Sighting testSighting;
+    @SuppressWarnings("unused")
     private SightingDTO testSightingDTO;
     private SightingRequest testSightingRequest;
 
@@ -125,6 +127,118 @@ public class SightingControllerTest {
         mockMvc.perform(get("/api/sightings/search")
                 .param("birdName", "Test")
                 .param("location", "Location"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(testSighting.getId()));
+    }
+
+    /**
+     * Tests the GET /api/sightings/search endpoint with a valid date range.
+     * Verifies that sightings within the specified date range are returned correctly.
+     *
+     * @throws Exception if the test encounters an error
+     */
+    @Test
+    void searchSightings_WithValidDateRange_ShouldReturnMatchingSightings() throws Exception {
+        LocalDateTime now = LocalDateTime.now();
+        testSighting.setSightingDate(now);
+        
+        when(sightingService.searchSightings(null, null))
+                .thenReturn(Arrays.asList(testSighting));
+
+        mockMvc.perform(get("/api/sightings/search")
+                .param("startDate", now.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME))
+                .param("endDate", now.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(testSighting.getId()));
+    }
+
+    /**
+     * Tests the GET /api/sightings/search endpoint with a date range that doesn't include any sightings.
+     * Verifies that an empty list is returned when no sightings match the date criteria.
+     *
+     * @throws Exception if the test encounters an error
+     */
+    @Test
+    void searchSightings_WithDateOutsideRange_ShouldReturnEmptyList() throws Exception {
+        LocalDateTime now = LocalDateTime.now();
+        testSighting.setSightingDate(now);
+        
+        when(sightingService.searchSightings(null, null))
+                .thenReturn(Arrays.asList(testSighting));
+
+        mockMvc.perform(get("/api/sightings/search")
+                .param("startDate", now.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME))
+                .param("endDate", now.plusHours(2).format(DateTimeFormatter.ISO_DATE_TIME)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    /**
+     * Tests the GET /api/sightings/search endpoint with an invalid date format.
+     * Verifies that the endpoint returns a 400 Bad Request status when the date format is invalid.
+     *
+     * @throws Exception if the test encounters an error
+     */
+    @Test
+    void searchSightings_WithInvalidDateFormat_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(get("/api/sightings/search")
+                .param("startDate", "invalid-date"))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests the GET /api/sightings/search endpoint with input containing invalid characters.
+     * Verifies that the endpoint returns a 400 Bad Request status when the input contains
+     * characters not allowed by the sanitization rules.
+     *
+     * @throws Exception if the test encounters an error
+     */
+    @Test
+    void searchSightings_WithInvalidInputCharacters_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(get("/api/sightings/search")
+                .param("birdName", "Test@Bird")
+                .param("location", "New York"))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests the GET /api/sightings/search endpoint with input exceeding the maximum length.
+     * Verifies that the endpoint returns a 400 Bad Request status when the input length
+     * exceeds the maximum allowed length.
+     *
+     * @throws Exception if the test encounters an error
+     */
+    @Test
+    void searchSightings_WithInputTooLong_ShouldReturnBadRequest() throws Exception {
+        String longInput = "a".repeat(101); // 101 characters
+        mockMvc.perform(get("/api/sightings/search")
+                .param("birdName", longInput))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests the GET /api/sightings/search endpoint with all search parameters.
+     * Verifies that the endpoint correctly filters sightings based on bird name,
+     * location, and date range when all parameters are provided.
+     *
+     * @throws Exception if the test encounters an error
+     */
+    @Test
+    void searchSightings_WithAllParameters_ShouldReturnMatchingSightings() throws Exception {
+        LocalDateTime now = LocalDateTime.now();
+        testSighting.setSightingDate(now);
+        
+        when(sightingService.searchSightings("Test", "Location"))
+                .thenReturn(Arrays.asList(testSighting));
+
+        mockMvc.perform(get("/api/sightings/search")
+                .param("birdName", "Test")
+                .param("location", "Location")
+                .param("startDate", now.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME))
+                .param("endDate", now.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(testSighting.getId()));
