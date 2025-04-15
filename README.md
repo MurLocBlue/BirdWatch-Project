@@ -54,29 +54,29 @@ Alternatively, you can run the tests manually:
 ## Technologies Used 🛠️
 
 ### Backend
-- Java 11
-- Spring Boot 2.7.18
-- Spring Data JPA
-- PostgreSQL Database
-- Maven
-- Lombok
-- Jackson (JSON processing)
+- Java 11 (Core programming language)
+- Spring Boot 2.7.18 (Web application framework)
+- Spring Data JPA (Database access and ORM)
+- PostgreSQL Database (Relational database management system)
+- Maven (Build automation and dependency management)
+- Lombok (Java library for reducing boilerplate code)
+- Jackson (JSON processing library)
 
 ### Frontend
 - Eclipse RCP (Rich Client Platform)
 - SWT (Standard Widget Toolkit)
 
 ### Infrastructure
-- Docker
-- Docker Compose
-- PostgreSQL
-- Bash
+- Docker (Containerization platform for packaging and running applications)
+- Docker Compose (Tool for defining and running multi-container Docker applications)
+- PostgreSQL (Open-source relational database system)
+- Bash (Unix shell and command language for automation scripts)
 
 ### Testing
-- JUnit 5
-- Mockito
-- Spring Boot Test
-- Maven Surefire Plugin
+- JUnit 5 (Java unit testing framework)
+- Mockito (Mocking framework for unit tests)
+- Spring Boot Test (Integration testing framework for Spring Boot applications)
+- Maven Surefire Plugin (Plugin for running tests during the build process)
 
 ## API Documentation 📚
 
@@ -101,7 +101,10 @@ Alternatively, you can run the tests manually:
 | GET    | `/api/sightings/{id}` | Get a specific sighting |
 | GET    | `/api/sightings/search?birdName={bird_name}` | Search sightings by bird name |
 | GET    | `/api/sightings/search?location={location}` | Search sightings by location |
-| GET    | `/api/sightings/search?birdName={bird_name}&location={location}` | Search sightings by bird name and location |
+| GET    | `/api/sightings/search?startDate={ISO_format_startDate}` | Search sightings by interval starting from this date |
+| GET    | `/api/sightings/search?endDate={ISO_format_endDate}` | Search sightings by interval ending on this date |
+| GET    | `/api/sightings/search?startDate={ISO_format_startDate}&endDate={ISO_format_endDate}` | Search sightings by in the given time interval |
+| GET    | `/api/sightings/search?birdName={bird_name}&location={location}&startDate={ISO_format_startDate}&endDate={ISO_format_endDate}` | Search sightings by bird name, location and time interval |
 | POST   | `/api/sightings` | Create a new sighting |
 | PUT    | `/api/sightings/{id}` | Update an existing sighting |
 | DELETE | `/api/sightings/{id}` | Delete a sighting |
