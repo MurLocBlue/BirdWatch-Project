@@ -45,8 +45,13 @@ public class SightingsView {
     private Table table;
     private ApiClient apiClient;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter ISO_DATE_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
     private Text birdNameSearchText;
     private Text locationSearchText;
+    private DateTime startDateSearchDate;
+    private DateTime startDateSearchTime;
+    private DateTime endDateSearchDate;
+    private DateTime endDateSearchTime;
 
     /**
      * Constructs a new SightingsView.
@@ -69,7 +74,7 @@ public class SightingsView {
 
         // Create search container
         Composite searchContainer = new Composite(container, SWT.NONE);
-        searchContainer.setLayout(new GridLayout(4, false));
+        searchContainer.setLayout(new GridLayout(6, false));
         searchContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
         // Bird name search label
@@ -89,10 +94,72 @@ public class SightingsView {
         // Location search text field
         locationSearchText = new Text(searchContainer, SWT.BORDER);
         locationSearchText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
+        
+        // Perform search button
+        Button searchButton = new Button(searchContainer, SWT.NONE);
+        searchButton.setText("      Search      ");
+        searchButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+        searchButton.addListener(SWT.Selection, event -> performSearch());
+        
+        // Clear Filters button
+        Button clearButton = new Button(searchContainer, SWT.NONE);
+        clearButton.setText("Clear");
+        clearButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+        clearButton.addListener(SWT.Selection, event -> clearSearch());
+        
+        // Create second line of search container
+        Composite searchContainerDates = new Composite(container, SWT.NONE);
+        searchContainerDates.setLayout(new GridLayout(4, false));
+        searchContainerDates.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        
+        // Date start search label
+        Label startDateSearchLabel = new Label(searchContainerDates, SWT.NONE);
+        startDateSearchLabel.setText("Start date:");
+        startDateSearchLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        
+        // Date start search date field
+        startDateSearchDate = new DateTime(searchContainerDates, SWT.DATE | SWT.BORDER);
+        startDateSearchDate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        
+        // Date end search label
+        Label endDateaSearchLabel = new Label(searchContainerDates, SWT.NONE);
+        endDateaSearchLabel.setText("End date:");
+        endDateaSearchLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        
+        // Date end search date field
+        endDateSearchDate = new DateTime(searchContainerDates, SWT.DATE | SWT.BORDER);
+        endDateSearchDate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        
+        // Create third line of search container
+        Composite searchContainerTimes = new Composite(container, SWT.NONE);
+        searchContainerTimes.setLayout(new GridLayout(4, false));
+        searchContainerTimes.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        
+        // Date start time search label
+        Label startDateSearchTimeLabel = new Label(searchContainerTimes, SWT.NONE);
+        startDateSearchTimeLabel.setText("Start time:");
+        startDateSearchTimeLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        
+        // Date start time search date field
+        startDateSearchTime = new DateTime(searchContainerTimes, SWT.TIME | SWT.BORDER);
+        startDateSearchTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        
+        // Date start time search label
+        Label endDateSearchTimeLabel = new Label(searchContainerTimes, SWT.NONE);
+        endDateSearchTimeLabel.setText("End time:");
+        endDateSearchTimeLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        
+        // Date start time search date field
+        endDateSearchTime = new DateTime(searchContainerTimes, SWT.TIME | SWT.BORDER);
+        endDateSearchTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        
         // Add search listeners
-        birdNameSearchText.addListener(SWT.Modify, event -> performSearch());
-        locationSearchText.addListener(SWT.Modify, event -> performSearch());
+//		birdNameSearchText.addListener(SWT.Modify, event -> performSearch());
+//		locationSearchText.addListener(SWT.Modify, event -> performSearch());
+//		startDateSearchDate.addListener(SWT.Modify, event -> performSearch());
+//		startDateSearchTime.addListener(SWT.Modify, event -> performSearch());
+//		endDateSearchDate.addListener(SWT.Modify, event -> performSearch());
+//		endDateSearchTime.addListener(SWT.Modify, event -> performSearch());
 
         // Create button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
@@ -140,7 +207,7 @@ public class SightingsView {
         // Delete Sighting button
         Button deleteButton = new Button(buttonContainer, SWT.PUSH);
         deleteButton.setText("Delete Selected Sighting");
-        deleteButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+        deleteButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
         deleteButton.addListener(SWT.Selection, event -> {
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
             Sighting selectedSighting = (Sighting) selection.getFirstElement();
@@ -203,6 +270,9 @@ public class SightingsView {
 
         // Load data
         loadData();
+        
+        // Reset filter fields
+        clearSearch();
 
         return container;
     }
@@ -214,7 +284,8 @@ public class SightingsView {
     private class AddSightingDialog extends Dialog {
         private Sighting sighting;
         private Text locationText;
-        private DateTime dateTime;
+        private DateTime dateTimeDate;
+        private DateTime dateTimeTime;
         private ComboViewer birdCombo;
         private List<Bird> birds;
 
@@ -275,10 +346,15 @@ public class SightingsView {
             locationText = new Text(shell, SWT.BORDER);
             locationText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-            // Date/Time fields
-            new Label(shell, SWT.NONE).setText("Sighting Date/Time:");
-            dateTime = new DateTime(shell, SWT.DATE | SWT.TIME | SWT.BORDER);
-            dateTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            // Date field
+            new Label(shell, SWT.NONE).setText("Sighting Date:");
+            dateTimeDate = new DateTime(shell, SWT.DATE | SWT.BORDER);
+            dateTimeDate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            
+            // Time field
+            new Label(shell, SWT.NONE).setText("Sighting Time:");
+            dateTimeTime = new DateTime(shell, SWT.TIME | SWT.BORDER);
+            dateTimeTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
             // Buttons
             Composite buttonComposite = new Composite(shell, SWT.NONE);
@@ -308,8 +384,8 @@ public class SightingsView {
                     }
 
                     LocalDateTime sightingDateTime = LocalDateTime.of(
-                        LocalDate.of(dateTime.getYear(), dateTime.getMonth() + 1, dateTime.getDay()),
-                        LocalTime.of(dateTime.getHours(), dateTime.getMinutes())
+                        LocalDate.of(dateTimeDate.getYear(), dateTimeDate.getMonth() + 1, dateTimeDate.getDay()),
+                        LocalTime.of(dateTimeTime.getHours(), dateTimeTime.getMinutes())
                     );
 
                     sighting = new Sighting();
@@ -456,9 +532,28 @@ public class SightingsView {
     private void performSearch() {
         String birdName = birdNameSearchText.getText().trim();
         String location = locationSearchText.getText().trim();
+        String startDate = null;
+        String endDate = null;
         
-        if (!birdName.isEmpty() || !location.isEmpty()) {
-            apiClient.searchSightings(birdName, location).thenAccept(sightings -> {
+        if (startDateSearchDate != null && startDateSearchTime != null) {
+        	LocalDateTime startDateTime = LocalDateTime.of(
+                    LocalDate.of(startDateSearchDate.getYear(), startDateSearchDate.getMonth() + 1, startDateSearchDate.getDay()),
+                    LocalTime.of(startDateSearchTime.getHours(), startDateSearchTime.getMinutes())
+                    );
+        	startDate = startDateTime.format(ISO_DATE_FORMATTER);
+        }
+        
+        if (endDateSearchDate != null && endDateSearchTime != null) {
+            LocalDateTime endDateTime = LocalDateTime.of(
+                    LocalDate.of(endDateSearchDate.getYear(), endDateSearchDate.getMonth() + 1, endDateSearchDate.getDay()),
+                    LocalTime.of(endDateSearchTime.getHours(), endDateSearchTime.getMinutes())
+                    );
+
+            endDate = endDateTime.format(ISO_DATE_FORMATTER);
+        }
+        
+        if (!birdName.isEmpty() || !location.isEmpty() || !startDate.isEmpty() || !endDate.isEmpty()) {
+            apiClient.searchSightings(birdName, location, startDate, endDate).thenAccept(sightings -> {
                 viewer.getTable().getDisplay().asyncExec(() -> {
                     try {
                         viewer.setInput(sightings);
@@ -476,6 +571,22 @@ public class SightingsView {
         } else {
             loadData(); // Reload all sightings when both search fields are cleared
         }
+    }
+    
+    /**
+     * Clears the search filters for sighting view.
+     * Updates the table with un-filtered results.
+     */
+    private void clearSearch() {
+    	birdNameSearchText.setText("");
+    	locationSearchText.setText("");
+    	startDateSearchDate.setDate(1960, 0, 1);
+    	startDateSearchTime.setTime(0, 0, 0);
+    	
+    	LocalDateTime today = LocalDateTime.now();
+    	endDateSearchDate.setDate(today.getYear(), today.getMonthValue()-1, today.getDayOfMonth());
+    	endDateSearchTime.setTime(today.getHour(), today.getMinute(), today.getSecond());
+    	performSearch();
     }
 
     /**
