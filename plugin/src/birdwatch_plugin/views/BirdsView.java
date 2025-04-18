@@ -63,7 +63,7 @@ public class BirdsView {
 
         // Create search container
         Composite searchContainer = new Composite(container, SWT.NONE);
-        searchContainer.setLayout(new GridLayout(4, false));
+        searchContainer.setLayout(new GridLayout(6, false));
         searchContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
         // Name search label
@@ -83,10 +83,22 @@ public class BirdsView {
         // Color search text field
         colorSearchText = new Text(searchContainer, SWT.BORDER);
         colorSearchText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        
+        // Perform search button
+        Button searchButton = new Button(searchContainer, SWT.NONE);
+        searchButton.setText("      Search      ");
+        searchButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+        searchButton.addListener(SWT.Selection, event -> performSearch());
+        
+        // Clear Filters button
+        Button clearButton = new Button(searchContainer, SWT.NONE);
+        clearButton.setText("Clear");
+        clearButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+        clearButton.addListener(SWT.Selection, event -> clearSearch());
 
         // Add search listeners
-        nameSearchText.addListener(SWT.Modify, event -> performSearch());
-        colorSearchText.addListener(SWT.Modify, event -> performSearch());
+//		nameSearchText.addListener(SWT.Modify, event -> performSearch());
+//		colorSearchText.addListener(SWT.Modify, event -> performSearch());
 
         // Create button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
@@ -134,7 +146,7 @@ public class BirdsView {
         // Delete Bird button
         Button deleteButton = new Button(buttonContainer, SWT.PUSH);
         deleteButton.setText("Delete Selected Bird");
-        deleteButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+        deleteButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
         deleteButton.addListener(SWT.Selection, event -> {
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
             Bird selectedBird = (Bird) selection.getFirstElement();
@@ -254,7 +266,7 @@ public class BirdsView {
         // Weight column
         TableViewerColumn weightColumn = new TableViewerColumn(viewer, SWT.NONE);
         TableColumn weightCol = weightColumn.getColumn();
-        weightCol.setText("Weight (kg)");
+        weightCol.setText("Weight (g)");
         weightCol.setWidth(100);
         weightColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -357,6 +369,16 @@ public class BirdsView {
             loadData(); // Reload all birds when both search fields are cleared
         }
     }
+    
+    /**
+     * Clears the search filters for birds view.
+     * Updates the table with un-filtered results.
+     */
+    private void clearSearch() {
+    	nameSearchText.setText("");
+    	colorSearchText.setText("");
+    	performSearch();
+    }
 
     /**
      * Dialog class for adding new birds.
@@ -408,7 +430,7 @@ public class BirdsView {
             colorText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
             // Weight field
-            new Label(shell, SWT.NONE).setText("Weight (kg):");
+            new Label(shell, SWT.NONE).setText("Weight (g):");
             weightText = new Text(shell, SWT.BORDER);
             weightText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 

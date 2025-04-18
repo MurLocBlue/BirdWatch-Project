@@ -206,7 +206,7 @@ public class ApiClient {
      * @param location Optional parameter to filter sightings by location
      * @return CompletableFuture containing a list of matching sightings
      */
-    public CompletableFuture<List<Sighting>> searchSightings(String birdName, String location) {
+    public CompletableFuture<List<Sighting>> searchSightings(String birdName, String location, String startDate, String endDate) {
         StringBuilder uriBuilder = new StringBuilder(BASE_URL + "/sightings/search?");
         if (birdName != null && !birdName.isEmpty()) {
             uriBuilder.append("birdName=").append(birdName);
@@ -216,6 +216,20 @@ public class ApiClient {
                 uriBuilder.append("location=").append(location);
             } else {
                 uriBuilder.append("&location=").append(location);
+            }
+        }
+        if (startDate != null && !startDate.isEmpty()) {
+            if (uriBuilder.toString().endsWith("?")) {
+                uriBuilder.append("startDate=").append(startDate);
+            } else {
+                uriBuilder.append("&startDate=").append(startDate);
+            }
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            if (uriBuilder.toString().endsWith("?")) {
+                uriBuilder.append("endDate=").append(endDate);
+            } else {
+                uriBuilder.append("&endDate=").append(endDate);
             }
         }
 
